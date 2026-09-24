@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Float — JazzPoint</title>
+  <meta name="description" content="JazzPoint float detail: available Jazz Load, recharge runway and recent history.">
+  <meta name="theme-color" content="#17130f">
+  <link rel="icon" href="assets/jazzpoint-logo-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- ANALYTICS / TAG MANAGER SNIPPET -->
+</head>
+<body>
+
+<!--
+  NOTE ON THIS PAGE'S DESIGN SOURCE: design/Area Manager - Float.dc.html is a duplicate of the
+  Hierarchy Performance TSS/Franchise chooser screen (same markup, same copy, just the active nav
+  tab changed) rather than an actual float-history mockup — it doesn't match this page's purpose
+  in the README. This page is built instead from the README's functional spec ("Float history and
+  runway detail") and the balance-card component already established on index.html, reusing the
+  exact same tokens/classes. Flagged for design follow-up; see the handoff notes in the PR/summary.
+-->
+
+<!-- Icon sprite: see index.html for the full, commented set of symbols this project uses. -->
+<svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="icon-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="icon-rotate-cw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12.5 10 16.5 18 7.5"/></symbol>
+  <symbol id="icon-arrow-up-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></symbol>
+  <symbol id="icon-arrow-down-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7 17 17"/><path d="M17 7v10H7"/></symbol>
+  <symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 9v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9"/></symbol>
+  <symbol id="icon-myop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol>
+  <symbol id="icon-commission" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></symbol>
+  <symbol id="icon-float" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></symbol>
+  <symbol id="icon-bar-chart-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+</svg>
+
+<div class="app">
+
+  <!-- ========== Page header ========== -->
+  <header class="page-header">
+    <a class="page-header__back" href="index.html" aria-label="Back to home">
+      <svg class="icon" aria-hidden="true"><use href="#icon-chevron-left"></use></svg>
+    </a>
+    <h1 class="page-header__title">Float</h1>
+  </header>
+
+  <main class="page-content">
+    <!-- Same balance/runway component as index.html's balance card. API: GET /float ->
+         { available, avgDailyUse7d, updatedAt }. Not a link here since we're already on the detail page. -->
+    <section class="card balance" aria-label="Balance">
+      <div>
+        <div class="label">Available Jazz Load</div>
+        <div class="balance__amount" data-bind="floatAvailable">Rs 2,450,000</div>
+        <div class="balance__updated"><svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg>Updated <span data-bind="balanceUpdated">just now</span></div>
+      </div>
+      <button class="refresh-btn" type="button" aria-label="Refresh balance" data-action="refresh-balance" data-state="idle">
+        <svg class="icon" aria-hidden="true"><use href="#icon-rotate-cw" data-refresh-icon></use></svg>
+      </button>
+      <span class="v-divider" aria-hidden="true"></span>
+      <!-- runway = floatAvailable ÷ avg daily float use (last 7 days). >3d good · 1.5–3d warn · <1.5d bad -->
+      <div class="runway" data-status="warn">
+        <span class="label">Recharge In</span>
+        <span class="runway__value"><span class="runway__days" data-bind="runwayDays">2.5</span><span class="runway__unit">days</span></span>
+        <ul class="runway__bar" aria-hidden="true">
+          <li class="is-filled"></li><li class="is-filled"></li><li class="is-filled"></li><li></li><li></li><li></li><li></li>
+        </ul>
+      </div>
+    </section>
+
+    <h2 class="section__title" style="margin:var(--space-10) 0 var(--space-6)">Float History</h2>
+
+    <!-- API: GET /float/history -> [{ id, type, label, meta, amount, direction }] -->
+    <div class="card">
+      <ul class="history-list" data-bind="floatHistory">
+        <li class="history-row">
+          <span class="history-row__icon"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-up-right"></use></svg></span>
+          <span class="history-row__main">
+            <p class="history-row__title">Float top-up received</p>
+            <p class="history-row__meta">Today, 9:14 AM · Head office transfer</p>
+          </span>
+          <span class="history-row__amount is-good">+ Rs 1,500,000</span>
+        </li>
+        <li class="history-row">
+          <span class="history-row__icon"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-down-right"></use></svg></span>
+          <span class="history-row__main">
+            <p class="history-row__title">Load issued to agents</p>
+            <p class="history-row__meta">Today, 8:02 AM · 14 agents</p>
+          </span>
+          <span class="history-row__amount">− Rs 640,000</span>
+        </li>
+        <li class="history-row">
+          <span class="history-row__icon"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-down-right"></use></svg></span>
+          <span class="history-row__main">
+            <p class="history-row__title">Load issued to agents</p>
+            <p class="history-row__meta">Yesterday, 6:47 PM · 22 agents</p>
+          </span>
+          <span class="history-row__amount">− Rs 980,000</span>
+        </li>
+        <li class="history-row">
+          <span class="history-row__icon"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-up-right"></use></svg></span>
+          <span class="history-row__main">
+            <p class="history-row__title">Float top-up received</p>
+            <p class="history-row__meta">Yesterday, 10:30 AM · Head office transfer</p>
+          </span>
+          <span class="history-row__amount is-good">+ Rs 2,000,000</span>
+        </li>
+        <li class="history-row">
+          <span class="history-row__icon"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-down-right"></use></svg></span>
+          <span class="history-row__main">
+            <p class="history-row__title">Load issued to agents</p>
+            <p class="history-row__meta">2 days ago, 5:15 PM · 19 agents</p>
+          </span>
+          <span class="history-row__amount">− Rs 715,000</span>
+        </li>
+      </ul>
+    </div>
+  </main>
+
+  <!-- ========== Bottom nav ========== -->
+  <nav class="bottom-nav" aria-label="Primary">
+    <span class="bottom-nav__indicator" aria-hidden="true"></span>
+    <a href="index.html"><svg class="icon" aria-hidden="true"><use href="#icon-home"></use></svg><span class="bottom-nav__label">Home</span></a>
+    <a href="myop.html"><svg class="icon" aria-hidden="true"><use href="#icon-myop"></use></svg><span class="bottom-nav__label">MYOP</span></a>
+    <a href="commission.html"><svg class="icon" aria-hidden="true"><use href="#icon-commission"></use></svg><span class="bottom-nav__label">Commission</span></a>
+    <a href="float.html" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-float"></use></svg><span class="bottom-nav__label">Float</span></a>
+    <a href="hierarchy-performance.html"><svg class="icon" aria-hidden="true"><use href="#icon-bar-chart-3"></use></svg><span class="bottom-nav__label">Performance</span></a>
+  </nav>
+</div>
+
+<script src="js/main.js" defer></script>
+</body>
+</html>
