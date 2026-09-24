@@ -380,7 +380,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 .section-chip { background: var(--color-track); padding: 10px 18px; font-weight: var(--fw-black); font-size: var(--fs-md); color: var(--color-accent); }
 
-.list-rows { display: flex; flex-direction: column; gap: var(--space-6); list-style: none; margin: 0; padding: var(--space-7) 0; }
+.list-rows { display: flex; flex-direction: column; gap: var(--space-6); list-style: none; margin: 0; padding: var(--space-7) var(--space-8); }
 .list-row { display: flex; align-items: stretch; width: 100%; text-decoration: none; color: inherit; transition: transform 120ms ease; }
 .list-row:active { transform: scale(.98); }
 .list-row__main {
