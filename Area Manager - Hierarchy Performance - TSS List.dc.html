@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href$=".dc.html"]');if(!a)return;e.preventDefault();var href=a.getAttribute('href');var go=function(){if(window.parent!==window)window.parent.postMessage({__jpNav:href},'*');else window.location.href=href;};var nav=a.closest('[data-jp-nav]');if(!nav){go();return;}var ind=nav.querySelector('[data-jp-ind]');var i=+a.dataset.idx;ind.style.left='calc(6px + '+i+' * (100% - 12px) / 5)';ind.style.transform='scaleX(1.12)';setTimeout(function(){ind.style.transform='scaleX(1)';},160);nav.querySelectorAll('a[data-idx]').forEach(function(x){x.style.color=x===a?x.dataset.on:x.dataset.off;});setTimeout(go,300);},true);</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  body{margin:0;background:#e3e1e1;font-family:"Archivo",system-ui,sans-serif}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:48px 24px;box-sizing:border-box">
+<div style="width:412px;height:892px;border-radius:18px;overflow:hidden;background:#f4fbf8;border:8px solid rgba(116,119,117,0.5);box-shadow:0 30px 80px rgba(0,0,0,0.25);display:flex;flex-direction:column;box-sizing:border-box;position:relative">
+
+  <div style="height:34px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:13px;font-weight:600;color:#201e1d;background:#f3f2f2">
+    <span>2:33</span>
+    <span style="display:flex;gap:6px;align-items:center">
+      <svg width="14" height="14" viewBox="0 0 16 16"><path d="M8 13.3L.67 5.97a10.37 10.37 0 0114.66 0L8 13.3z" fill="#201e1d"/></svg>
+      <svg width="14" height="14" viewBox="0 0 16 16"><rect x="3.75" y="2" width="8.5" height="13" rx="1.5" fill="#201e1d"/><rect x="5.5" y="0.9" width="5" height="2" rx="0.5" fill="#201e1d"/></svg>
+    </span>
+  </div>
+
+  <div style="background:linear-gradient(160deg, #17130f 0%, #4d170e 55%, #7c1405 100%);flex:none;padding:16px 18px 22px;display:flex;align-items:center;gap:14px;border-radius:0 0 22px 22px">
+    <a href="Area Manager - Hierarchy Performance.dc.html" aria-label="Back" style="width:34px;height:34px;border:0;background:rgba(255,255,255,0.14);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;flex:none;text-decoration:none">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </a>
+    <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:19px;color:#fff;line-height:1.25">Hierarchy Performance</div>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;background:#f3f2f2;padding-bottom:90px">
+    <div style="padding:16px 16px 12px;background:#f4fbf8">
+      <div style="position:relative">
+        <input type="text" placeholder="Search..." style="width:100%;box-sizing:border-box;border:1px solid rgba(32,30,29,0.15);border-radius:14px;padding:14px 44px 14px 16px;font-size:14px;font-family:inherit;color:#201e1d;background:#fff;outline:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(32,30,29,0.45)" stroke-width="2" stroke-linecap="round" style="position:absolute;right:14px;top:50%;transform:translateY(-50%)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </div>
+    </div>
+
+    <div style="background:rgba(32,30,29,0.06);padding:10px 18px;font-family:Archivo,sans-serif;font-weight:800;font-size:14px;color:#ec3013">TSS</div>
+
+    <div style="padding:14px 16px 20px;display:flex;flex-direction:column;gap:12px">
+      <sc-for list="{{ people }}" as="p" hint-placeholder-count="7">
+        <button type="button" onClick="{{ selectPerson }}" data-id="{{ p.id }}" style="display:flex;align-items:stretch;border:0;background:transparent;cursor:pointer;padding:0;font-family:inherit;text-align:left" style-active="transform:scale(0.98)">
+          <div style="flex:1;display:flex;align-items:center;gap:14px;background:#fff;border-radius:14px 0 0 14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec3013" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg>
+            <div style="font-size:15px;font-weight:500;color:#201e1d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1">{{ p.name }}</div>
+          </div>
+          <div style="width:52px;flex:none;background:#ec3013;border-radius:0 14px 14px 0;display:flex;align-items:center;justify-content:center;color:#fff">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- sticky bottom nav: floating glass pill; the tinted indicator glides to the tapped tab before navigating -->
+  <nav data-jp-nav="1" style="position:absolute;left:14px;right:14px;bottom:14px;height:62px;display:flex;align-items:stretch;padding:6px;box-sizing:border-box;background:rgba(255,255,255,0.86);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(32,30,29,0.08);border-radius:31px;box-shadow:0 12px 32px rgba(0,0,0,0.18),0 2px 6px rgba(0,0,0,0.06);z-index:45">
+    <span data-jp-ind="1" style="position:absolute;top:6px;bottom:6px;left:calc(6px + 4 * (100% - 12px) / 5);width:calc((100% - 12px) / 5);border-radius:25px;background:#fff0ec;transition:left .45s cubic-bezier(.32,.72,0,1),transform .45s cubic-bezier(.32,.72,0,1);pointer-events:none"></span>
+    <a href="Area Manager - Main.dc.html" aria-label="Home" data-idx="0" data-on="#ec3013" data-off="rgba(32,30,29,0.55)" style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:rgba(32,30,29,0.55);transition:color .3s ease,transform .25s cubic-bezier(.32,.72,0,1)" style-active="transform:scale(0.88)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"></path><path d="M5 9v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9"></path></svg>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.01em;white-space:nowrap">Home</span>
+    </a>
+    <a href="Area Manager - MYOP.dc.html" aria-label="MYOP" data-idx="1" data-on="#ec3013" data-off="rgba(32,30,29,0.55)" style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:rgba(32,30,29,0.55);transition:color .3s ease,transform .25s cubic-bezier(.32,.72,0,1)" style-active="transform:scale(0.88)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"></path><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"></path></svg>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.01em;white-space:nowrap">MYOP</span>
+    </a>
+    <a href="Area Manager - Commission.dc.html" aria-label="Commission" data-idx="2" data-on="#ec3013" data-off="rgba(32,30,29,0.55)" style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:rgba(32,30,29,0.55);transition:color .3s ease,transform .25s cubic-bezier(.32,.72,0,1)" style-active="transform:scale(0.88)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.01em;white-space:nowrap">Commission</span>
+    </a>
+    <a href="Area Manager - Float.dc.html" aria-label="Float" data-idx="3" data-on="#ec3013" data-off="rgba(32,30,29,0.55)" style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:rgba(32,30,29,0.55);transition:color .3s ease,transform .25s cubic-bezier(.32,.72,0,1)" style-active="transform:scale(0.88)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.01em;white-space:nowrap">Float</span>
+    </a>
+    <a href="Area Manager - Hierarchy Performance.dc.html" aria-label="Performance" data-idx="4" data-on="#ec3013" data-off="rgba(32,30,29,0.55)" style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:#ec3013;transition:color .3s ease,transform .25s cubic-bezier(.32,.72,0,1)" style-active="transform:scale(0.88)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.01em;white-space:nowrap">Performance</span>
+    </a>
+  </nav>
+
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  selectPerson = (e) => { /* wire to individual performance detail as it's built */ };
+  renderVals() {
+    return {
+      people: [
+        { id: 'abdul-aziz', name: 'Abdul Aziz-7206' },
+        { id: 'abdul-basit', name: 'Abdul Basit-7221' },
+        { id: 'annas-saeed', name: 'Annas Saeed-7206' },
+        { id: 'hanif-ur-rehman', name: 'Hanif Ur Rehman-7153' },
+        { id: 'imran-ud-din', name: 'Imran Ud Din-7719' },
+        { id: 'muhammad-ayaz-khan', name: 'Muhammad Ayaz Khan-7892' },
+        { id: 'shabina-ajmal', name: 'Shabina Ajmal-7144' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

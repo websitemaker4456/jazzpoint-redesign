@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>JazzPoint — Area Manager</title>
+  <meta name="theme-color" content="#17130f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- ANALYTICS / TAG MANAGER SNIPPET -->
+</head>
+<body>
+<div class="app">
+
+  <!-- ========== Header (frosted glass over gradient + glows) ========== -->
+  <header class="header">
+    <span class="header__glow header__glow--a" aria-hidden="true"></span>
+    <span class="header__glow header__glow--b" aria-hidden="true"></span>
+    <span class="header__glow header__glow--c" aria-hidden="true"></span>
+    <span class="header__sheen" aria-hidden="true"></span>
+
+    <div class="header__bar">
+      <h1 class="wordmark">Jazz<span>Point</span></h1>
+      <div class="header__actions">
+        <button class="icon-btn" type="button" aria-label="Toggle dark mode" data-action="toggle-theme"><i data-lucide="moon" class="icon"></i></button>
+        <button class="icon-btn" type="button" aria-label="Notifications" aria-controls="notif-panel" aria-expanded="false" data-action="open-notifs">
+          <i data-lucide="bell" class="icon"></i><span class="badge" data-bind="unreadCount">3</span>
+        </button>
+        <button class="icon-btn" type="button" aria-label="Menu" aria-controls="menu-drawer" aria-expanded="false" data-action="open-menu"><i data-lucide="menu" class="icon"></i></button>
+      </div>
+    </div>
+
+    <div class="greeting">
+      <div>
+        <p class="greeting__name">Hello, <span data-bind="userName">Hassaan</span></p>
+        <p class="greeting__role">Area Manager</p>
+      </div>
+      <div class="avatar" aria-hidden="true"><i data-lucide="user" class="icon"></i></div>
+    </div>
+
+    <!-- Balance card: Jazz Load + float runway -->
+    <section class="card balance" aria-label="Balance">
+      <div>
+        <div class="label">Available Jazz Load</div>
+        <div class="balance__amount" data-bind="floatAvailable">Rs 2,450,000</div>
+        <div class="balance__updated"><i data-lucide="clock" class="icon"></i>Updated <span data-bind="balanceUpdated">just now</span></div>
+      </div>
+      <button class="refresh-btn" type="button" aria-label="Refresh balance" data-action="refresh-balance" data-state="idle"><i data-lucide="rotate-cw" class="icon"></i></button>
+      <span class="v-divider" aria-hidden="true"></span>
+      <!-- runway = floatAvailable ÷ avg daily float use (last 7 days). >3d good · 1.5–3d warn · <1.5d bad -->
+      <a class="runway" href="float.html" data-status="warn">
+        <span class="label">Recharge In <i data-lucide="chevron-right" class="icon" style="width:10px;height:10px"></i></span>
+        <span class="runway__value"><span class="runway__days" data-bind="runwayDays">2.5</span><span class="runway__unit">days</span></span>
+        <ul class="runway__bar" aria-hidden="true">
+          <li class="is-filled"></li><li class="is-filled"></li><li class="is-filled"></li><li></li><li></li><li></li><li></li>
+        </ul>
+      </a>
+    </section>
+
+    <!-- Dashboard stats -->
+    <section class="card stats" aria-label="Today">
+      <a class="stat" href="#sales">
+        <span class="label">Sales Today <i data-lucide="chevron-right" class="icon" style="width:11px;height:11px"></i></span>
+        <span class="stat__value" data-bind="salesToday">8.4M</span>
+        <span class="chip chip--good" data-bind="salesDelta">▲ 6.3%</span>
+      </a>
+      <a class="stat" href="#agents">
+        <span class="label">Agents <i data-lucide="chevron-right" class="icon" style="width:11px;height:11px"></i></span>
+        <span class="stat__value" data-bind="agentCount">42</span>
+        <span class="chip" data-bind="agentsWithStock">36 have stock</span>
+      </a>
+      <!-- Low balance thresholds (stock-out %): ≥10% bad · 5–10% warn · <5% neutral -->
+      <a class="stat" href="#low-balance">
+        <span class="label">Low Balance <i data-lucide="chevron-right" class="icon" style="width:11px;height:11px"></i></span>
+        <span class="stat__value is-bad" data-bind="lowBalanceCount">6</span>
+        <span class="chip chip--bad" data-bind="stockOutPct">14.3% out</span>
+      </a>
+    </section>
+  </header>
+
+  <main>
+    <!-- ========== My Performance ========== -->
+    <section class="section" aria-labelledby="perf-title">
+      <div class="section__head">
+        <h2 class="section__title" id="perf-title">My Performance</h2>
+        <a class="link-more" href="hierarchy-performance.html">View all <i data-lucide="chevron-right" class="icon"></i></a>
+      </div>
+      <!-- KPI values are percentages of target; bar width is capped at 100% -->
+      <ul class="kpis">
+        <li><a class="card kpi" href="#kpi-4g"><span class="kpi__arrow"><i data-lucide="arrow-up-right" class="icon"></i></span><div class="kpi__label">4G Gross Adds</div><div class="kpi__value">73%</div><div class="progress"><div class="progress__fill" style="width:73%"></div></div></a></li>
+        <li><a class="card kpi" href="#kpi-postpaid"><span class="kpi__arrow"><i data-lucide="arrow-up-right" class="icon"></i></span><div class="kpi__label">B2C Real Postpaid</div><div class="kpi__value">51%</div><div class="progress"><div class="progress__fill" style="width:51%"></div></div></a></li>
+        <li><a class="card kpi" href="#kpi-mfs"><span class="kpi__arrow"><i data-lucide="arrow-up-right" class="icon"></i></span><div class="kpi__label">MFS M-Wallet</div><div class="kpi__value">72%</div><div class="progress"><div class="progress__fill" style="width:72%"></div></div></a></li>
+        <li><a class="card kpi" href="#kpi-multiplay"><span class="kpi__arrow"><i data-lucide="arrow-up-right" class="icon"></i></span><div class="kpi__label">Multiplay</div><div class="kpi__value">52%</div><div class="progress"><div class="progress__fill" style="width:52%"></div></div></a></li>
+        <li><a class="card kpi" href="#kpi-recharge"><span class="kpi__arrow"><i data-lucide="arrow-up-right" class="icon"></i></span><div class="kpi__label">Recharge YTD</div><div class="kpi__value">104%</div><div class="progress"><div class="progress__fill" style="width:100%"></div></div></a></li>
+        <li><a class="card kpi" href="#kpi-rox"><span class="kpi__arrow"><i data-lucide="arrow-up-right" class="icon"></i></span><div class="kpi__label">ROX</div><div class="kpi__value">88%</div><div class="progress"><div class="progress__fill" style="width:88%"></div></div></a></li>
+      </ul>
+      <!-- Note: the progress-bar width above is the only dynamic inline style; set it from data in JS. -->
+      <a class="card row-link" href="hierarchy-performance.html">
+        <i data-lucide="bar-chart-3" class="icon icon--accent"></i>
+        <span class="row-link__text">Hierarchy Performance</span>
+        <i data-lucide="chevron-right" class="icon icon--chev"></i>
+      </a>
+    </section>
+
+    <!-- ========== Quick Actions ========== -->
+    <section class="section" aria-labelledby="qa-title">
+      <h2 class="section__title section__head" id="qa-title">Quick Actions</h2>
+      <ul class="tiles">
+        <li><a class="card tile" href="myop.html"><span class="tile__icon"><i data-lucide="megaphone" class="icon"></i></span><span class="tile__label">MYOP</span></a></li>
+        <li><a class="card tile" href="float.html"><span class="tile__icon"><i data-lucide="percent" class="icon"></i></span><span class="tile__label">Float</span></a></li>
+        <li><a class="card tile" href="commission.html"><span class="tile__icon"><i data-lucide="wallet" class="icon"></i></span><span class="tile__label">Commission</span></a></li>
+        <li><a class="card tile" href="#franchise-survey"><span class="tile__icon"><i data-lucide="clipboard-list" class="icon"></i></span><span class="tile__label">Franchise Survey</span></a></li>
+        <li><a class="card tile" href="#campaign"><span class="tile__icon"><i data-lucide="flag" class="icon"></i></span><span class="tile__label">Campaign</span></a></li>
+        <li><a class="card tile" href="#retailer-performance"><span class="tile__icon"><i data-lucide="store" class="icon"></i></span><span class="tile__label">Retailer Performance</span></a></li>
+        <li><a class="card tile" href="#bash-performance"><span class="tile__icon"><i data-lucide="trophy" class="icon"></i></span><span class="tile__label">Bash Performance</span></a></li>
+        <li><a class="card tile" href="#agent-list"><span class="tile__icon"><i data-lucide="users" class="icon"></i></span><span class="tile__label">Agent List</span></a></li>
+        <li><button class="card tile" type="button" data-action="open-menu"><span class="tile__icon"><i data-lucide="layout-grid" class="icon"></i></span><span class="tile__label">More</span></button></li>
+      </ul>
+    </section>
+
+    <!-- ========== Promo banner ========== -->
+    <section class="promo" aria-label="Promotion">
+      <div class="promo__frame">
+        <!-- PLACEHOLDER: replace with campaign photo (assets/promo-banner.jpg, 824×300, rendered grayscale) -->
+        <img class="promo__img" src="assets/promo-banner.jpg" alt="" width="824" height="300" loading="lazy">
+        <p class="promo__copy" dir="rtl" lang="ur"><span>*964# سے بنڈل لگاؤ</span><span>فوری کمیشن پاؤ</span></p>
+        <div class="promo__dots" aria-hidden="true"><span class="is-active"></span><span></span><span></span></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========== Bottom nav ========== -->
+  <nav class="bottom-nav" aria-label="Primary">
+    <span class="bottom-nav__indicator" aria-hidden="true"></span>
+    <a href="index.html" aria-current="page"><i data-lucide="home" class="icon"></i><span class="bottom-nav__label">Home</span></a>
+    <a href="myop.html"><i data-lucide="megaphone" class="icon"></i><span class="bottom-nav__label">MYOP</span></a>
+    <a href="commission.html"><i data-lucide="wallet" class="icon"></i><span class="bottom-nav__label">Commission</span></a>
+    <a href="float.html"><i data-lucide="percent" class="icon"></i><span class="bottom-nav__label">Float</span></a>
+    <a href="hierarchy-performance.html"><i data-lucide="bar-chart-3" class="icon"></i><span class="bottom-nav__label">Performance</span></a>
+  </nav>
+
+  <button class="to-top" type="button" aria-label="Back to top" data-action="to-top"><span class="to-top__inner"><i data-lucide="arrow-up" class="icon"></i></span></button>
+
+  <!-- ========== Notifications panel ========== -->
+  <div class="overlay" hidden data-action="close-overlays"></div>
+  <section class="card panel" id="notif-panel" hidden aria-labelledby="notif-title">
+    <div class="panel__head">
+      <h2 class="panel__title" id="notif-title">Notifications</h2>
+      <div style="display:flex;gap:10px"><button class="text-btn" type="button" data-action="mark-read">Mark all read</button><button class="icon-btn" type="button" aria-label="Close" data-action="close-overlays" style="width:28px;height:28px"><i data-lucide="x" class="icon"></i></button></div>
+    </div>
+    <!-- API: GET /notifications → render <li class="notif is-unread"> items -->
+    <ul class="panel__list" data-bind="notifications">
+      <li class="notif is-unread"><span class="notif__icon"><i data-lucide="alert-triangle" class="icon"></i></span><div style="flex:1"><p class="notif__title">Low balance alert</p><p class="notif__body">6 agents are below minimum float.</p></div><span class="notif__time">2m</span></li>
+    </ul>
+  </section>
+
+  <!-- ========== Menu drawer ========== -->
+  <aside class="card drawer" id="menu-drawer" hidden aria-label="Menu">
+    <div class="panel__head"><h2 class="panel__title">Menu</h2><button class="icon-btn" type="button" aria-label="Close menu" data-action="close-overlays" style="width:28px;height:28px"><i data-lucide="x" class="icon"></i></button></div>
+    <ul class="drawer__list">
+      <li><a href="index.html"><i data-lucide="home" class="icon"></i>Home</a></li>
+      <li><a href="hierarchy-performance.html"><i data-lucide="bar-chart-3" class="icon"></i>Hierarchy Performance</a></li>
+      <li><a href="#settings"><i data-lucide="settings" class="icon"></i>Settings</a></li>
+      <li><a href="#logout" style="color:var(--color-bad)"><i data-lucide="log-out" class="icon"></i>Log out</a></li>
+    </ul>
+  </aside>
+</div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="js/main.js" defer></script>
+</body>
+</html>

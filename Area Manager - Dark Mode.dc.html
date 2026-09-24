@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href$=".dc.html"]');if(!a)return;e.preventDefault();var href=a.getAttribute('href');var go=function(){if(window.parent!==window)window.parent.postMessage({__jpNav:href},'*');else window.location.href=href;};var nav=a.closest('[data-jp-nav]');if(!nav){go();return;}var ind=nav.querySelector('[data-jp-ind]');var i=+a.dataset.idx;ind.style.left='calc(6px + '+i+' * (100% - 12px) / 5)';ind.style.transform='scaleX(1.12)';setTimeout(function(){ind.style.transform='scaleX(1)';},160);nav.querySelectorAll('a[data-idx]').forEach(function(x){x.style.color=x===a?x.dataset.on:x.dataset.off;});setTimeout(go,300);},true);</script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<script src="./image-slot.js"></script>
+<style>
+  body{margin:0;background:#e3e1e1;font-family:"Archivo",system-ui,sans-serif}
+  .jp-scroll::-webkit-scrollbar{width:0;height:0}
+  .jp-perf::-webkit-scrollbar{width:0;height:0}
+  @keyframes jp-pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @keyframes jp-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes jp-pop{0%{transform:scale(0.4);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}
+  @keyframes jp-logo-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.82);opacity:.65}}
+  @keyframes jp-fade{from{opacity:0}to{opacity:1}}
+  @keyframes jp-panel-in{from{opacity:0;transform:translateY(-8px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes jp-bounce-chevron{0%,100%{transform:translateY(0);opacity:.85}50%{transform:translateY(4px);opacity:1}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:48px 24px;box-sizing:border-box;gap:40px;flex-wrap:wrap">
+
+<div style="width:412px;height:892px;border-radius:18px;overflow:hidden;background:{{ screenBg }};border:8px solid rgba(116,119,117,0.5);box-shadow:0 30px 80px rgba(0,0,0,0.25);display:flex;flex-direction:column;box-sizing:border-box;position:relative;transition:background .25s ease">
+  <div style="height:34px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:13px;font-weight:600;color:{{ statusBarColor }}">
+    <span>9:30</span>
+    <span style="display:flex;gap:6px;align-items:center">
+      <svg width="14" height="14" viewBox="0 0 16 16"><path d="M8 13.3L.67 5.97a10.37 10.37 0 0114.66 0L8 13.3z" fill="{{ statusBarColor }}"/></svg>
+      <svg width="14" height="14" viewBox="0 0 16 16"><rect x="3.75" y="2" width="8.5" height="13" rx="1.5" fill="{{ statusBarColor }}"/><rect x="5.5" y="0.9" width="5" height="2" rx="0.5" fill="{{ statusBarColor }}"/></svg>
+    </span>
+  </div>
+
+<div class="jp-scroll" onScroll="{{ handleScroll }}" onTouchStart="{{ handleTouchStart }}" onTouchMove="{{ handleTouchMove }}" onTouchEnd="{{ handleTouchEnd }}" onMouseDown="{{ handlePullMouseDown }}" style="flex:1;overflow-y:auto;position:relative;background:{{ bg }};color:{{ text }};font-size:15px;line-height:1.4;transition:background .25s ease,color .25s ease">
+
+  <!-- pull-to-refresh indicator: a ring that fills as you drag (synced to pull distance),
+       spins once released past the threshold, then morphs into a checkmark when done. -->
+  <div style="position:absolute;top:0;left:0;right:0;height:{{ pullHeight }};display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:25;background:{{ bg }};transition:height .25s cubic-bezier(.34,1.56,.64,1)">
+    <svg width="24" height="24" viewBox="0 0 24 24" style="opacity:{{ pullOpacity }};transform:scale({{ pullScale }});transition:transform .15s ease">
+      <sc-if value="{{ pullRefreshing }}" hint-placeholder-val="{{ false }}">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="{{ accent }}" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="56.5" stroke-dashoffset="18" transform="rotate(-90 12 12)" style="animation:{{ pullSpin }};transform-origin:12px 12px"></circle>
+      </sc-if>
+      <sc-if value="{{ pullDone }}" hint-placeholder-val="{{ false }}">
+        <path d="M6 12.5 10 16.5 18 7.5" fill="none" stroke="{{ accent }}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation:jp-pop .3s ease"></path>
+      </sc-if>
+      <sc-if value="{{ pullIdle }}" hint-placeholder-val="{{ true }}">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="{{ divider }}" stroke-width="2.4"></circle>
+        <circle cx="12" cy="12" r="9" fill="none" stroke="{{ accent }}" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="56.5" stroke-dashoffset="{{ pullDashOffset }}" transform="rotate(-90 12 12)"></circle>
+      </sc-if>
+    </svg>
+  </div>
+
+  <div style="transform:translateY({{ pullHeight }});transition:transform .25s ease">
+
+  <!-- sticky mini header, fades in once scrolled past balance card -->
+  <div style="position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:{{ miniHeaderPadding }};height:{{ miniHeaderHeight }};overflow:hidden;background:{{ miniHeaderBg }};box-shadow:{{ miniHeaderShadow }};opacity:{{ scrolledOpacity }};transform:{{ scrolledTransform }};pointer-events:{{ scrolledPointer }};transition:opacity .2s ease,transform .2s ease,height .2s ease,padding .2s ease">
+    <button type="button" aria-label="Back to top" onClick="{{ backToTop }}" style="display:flex;align-items:center;gap:8px;flex:1;border:0;background:transparent;cursor:pointer;padding:0;text-align:left;color:{{ text }}">
+      <div style="width:28px;height:28px;flex:none;border-radius:50%;background:{{ accent }};color:#fff;display:flex;align-items:center;justify-content:center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 9v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9"/></svg>
+      </div>
+      <div style="font-weight:800;font-size:13px;font-family:Archivo,sans-serif">Jazz<span style="color:{{ accent }}">Point</span></div>
+    </button>
+    <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:14px;color:{{ text }}">Rs. 1,021</div>
+    <button type="button" aria-label="Notifications" onClick="{{ toggleNotifications }}" style="position:relative;width:30px;height:30px;flex:none;border:0;background:transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:{{ text }};transition:transform .15s ease,background .15s ease" style-hover="background:{{ divider }}" style-active="transform:scale(0.88)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      <span style="position:absolute;top:0;right:0;min-width:13px;height:13px;padding:0 2px;border-radius:7px;background:{{ accent }};color:#fff;font-size:8px;font-weight:800;display:flex;align-items:center;justify-content:center;border:1.5px solid {{ miniHeaderBg }}">{{ unreadCount }}</span>
+    </button>
+    <button type="button" aria-label="Menu" onClick="{{ toggleMenu }}" style="width:30px;height:30px;flex:none;border:0;background:transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:{{ text }};transition:transform .15s ease,background .15s ease" style-hover="background:{{ divider }}" style-active="transform:scale(0.88)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+    </button>
+  </div>
+
+  <!-- header block -->
+  <div style="background:{{ headerBg }};padding:{{ headerPad }};border-radius:0 0 24px 24px;position:relative;transition:background .25s ease">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:20px;letter-spacing:-.01em;color:{{ headerText }}">Jazz<span style="color:#e8886e">Point</span></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button type="button" aria-label="Toggle dark mode" onClick="{{ toggleDark }}" style="width:38px;height:38px;border:0;background:transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:{{ headerText }};transition:transform .15s ease,background .15s ease" style-hover="background:rgba(255,255,255,0.12)" style-active="transform:scale(0.88);background:rgba(255,255,255,0.2)">
+          {{ modeIcon }}
+        </button>
+        <button type="button" aria-label="Notifications" onClick="{{ toggleNotifications }}" style="position:relative;width:38px;height:38px;border:0;background:transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:{{ headerText }};transition:transform .15s ease,background .15s ease" style-hover="background:rgba(255,255,255,0.12)" style-active="transform:scale(0.88);background:rgba(255,255,255,0.2)">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span style="position:absolute;top:3px;right:3px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:{{ accent }};color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;border:1.5px solid {{ headerBg }}">{{ unreadCount }}</span>
+        </button>
+        <button type="button" aria-label="Menu" onClick="{{ toggleMenu }}" style="width:38px;height:38px;border:0;background:transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:{{ headerText }};transition:transform .15s ease,background .15s ease" style-hover="background:rgba(255,255,255,0.12)" style-active="transform:scale(0.88);background:rgba(255,255,255,0.2)">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px">
+      <div>
+        <div style="font-family:Archivo,sans-serif;font-weight:700;font-size:19px;color:{{ headerText }}">Hello, Hassaan</div>
+        <div style="font-size:13px;color:{{ headerSubtext }};margin-top:2px">0301-3326722 &nbsp;·&nbsp; Area Manager</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:44px;height:44px;flex:none;border-radius:50%;background:rgba(255,255,255,0.16);border:1.5px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;color:{{ headerText }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- balance card (with monthly target merged in) -->
+    <div style="background:{{ cardBg }};margin:{{ cardMarginTop }} 0 0;padding:{{ cardPad }};border-radius:{{ radiusLg }};border:{{ cardBorder }};box-shadow:0 1px 2px rgba(0,0,0,0.14)">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div>
+            <div style="font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:{{ accent700 }}">Available Jazz Load</div>
+            <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:21px;margin-top:4px;color:{{ text }};white-space:nowrap">Rs. 1,021.20</div>
+          </div>
+          
+        </div>
+        <button type="button" aria-label="Refresh balance" onClick="{{ refreshBalance }}" style="width:28px;height:28px;flex:none;border:{{ refreshBtnBorder }};background:transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:{{ text }};transition:transform .15s ease,border-color .15s ease,color .15s ease" style-hover="border-color:{{ accent }};color:{{ accent }}" style-active="transform:scale(0.85)">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <sc-if value="{{ refreshingBalance }}" hint-placeholder-val="{{ false }}">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="{{ accent }}" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="56.5" stroke-dashoffset="18" transform="rotate(-90 12 12)" style="animation:{{ refreshSpin }};transform-origin:12px 12px"></circle>
+              </sc-if>
+              <sc-if value="{{ refreshDone }}" hint-placeholder-val="{{ false }}">
+                <path d="M6 12.5 10 16.5 18 7.5" fill="none" stroke="{{ accent }}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation:jp-pop .3s ease"></path>
+              </sc-if>
+              <sc-if value="{{ refreshIdle }}" hint-placeholder-val="{{ true }}">
+                <path d="M21 12a9 9 0 1 1-2.64-6.36" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"></path>
+                <path d="M21 3v6h-6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"></path>
+              </sc-if>
+            </svg>
+          </button><div style="width:1px;align-self:stretch;background:{{ divider }};flex:none"></div>
+        <!-- This card is now personalized: it shows whichever KPI the manager has tapped
+             most often in the "My Performance" carousel below, instead of a fixed target.
+             Tap any KPI card a few times to see this swap live. See kpiViewCounts / mostViewedKpi
+             in the logic class for the (prototype) tracking + selection logic. -->
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:8px">
+            <div style="font-size:9.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:{{ textMuted }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ targetLabel }}</div>
+            <div style="font-size:12px;font-weight:700;color:{{ accent700 }};flex-shrink:0;white-space:nowrap">{{ targetPct }}%</div>
+          </div>
+          <div style="height:6px;border-radius:3px;background:{{ statTrack }};position:relative;overflow:hidden">
+            <div style="position:absolute;left:0;top:0;height:100%;width:{{ targetPct }}%;background:{{ accent }};border-radius:3px;transition:width .3s ease"></div>
+          </div>
+          <div style="font-size:9.5px;color:{{ textMuted }};margin-top:6px">{{ targetDetail }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- stats row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:{{ cardBg }};margin:{{ cardMarginTop }} 0 0;border-radius:{{ radiusMd }};border:{{ cardBorder }};overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.14)">
+      <sc-for list="{{ stats }}" as="s" hint-placeholder-count="3">
+        <button type="button" onClick="{{ selectTile }}" data-tile="{{ s.linkTile }}" style="padding:14px 6px 12px;text-align:center;position:relative;border:0;border-right:{{ dividerWeight }} solid {{ divider }};background:{{ cardBg }};cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;transition:transform .15s cubic-bezier(.32,.72,0,1),background .15s ease" style-hover="background:{{ statHover }}" style-active="transform:scale(0.95);background:{{ statHover }}">
+          <div style="display:flex;align-items:center;justify-content:center;gap:2px;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:{{ textMuted }};margin-bottom:5px;white-space:nowrap">{{ s.label }}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m9 18 6-6-6-6"></path></svg></div>
+          <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:28px;letter-spacing:-.02em;line-height:1.05;color:{{ s.valueColor }};transition:color .3s ease">{{ s.value }}</div>
+          <div style="margin-top:7px;display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:10px;font-size:10px;font-weight:800;white-space:nowrap;color:{{ s.subColor }};background:{{ s.subBg }}">{{ s.sub }}</div>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="padding:9px 2px 0;font-size:10.5px;color:{{ headerSubtext }};text-align:center">Login: 14 Sep 2026, 1:05 PM &nbsp;·&nbsp; v2.0.1</div>
+  </div>
+
+  <!-- my performance carousel -->
+  <div style="padding:{{ sectionPad }}">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
+      <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:15px;letter-spacing:.02em;text-transform:uppercase">My Performance</div>
+      <a href="#" style="font-size:12px;font-weight:600;color:{{ accent }};text-decoration:none;display:flex;align-items:center;gap:2px;transition:transform .15s ease" style-active="transform:scale(0.92)">View all
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+    </div>
+
+    <div style="position:relative">
+      <div class="jp-perf" ref="{{ perfRef }}" onScroll="{{ handlePerfScroll }}" onPointerDown="{{ dragStart }}" onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" onTouchStart="{{ pausePerf }}" onTouchEnd="{{ resumePerf }}" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:2px;cursor:grab;will-change:scroll-position">
+        <sc-for list="{{ kpisDoubled }}" as="k" hint-placeholder-count="12">
+          <button type="button" onClick="{{ trackKpiView }}" data-kpi="{{ k.label }}" style="flex:0 0 148px;position:relative;text-align:left;border:0;font-family:inherit;cursor:pointer;background:{{ cardBg }};padding:{{ perfPad }};border-radius:{{ radiusSm }};border:{{ cardBorder }};box-shadow:{{ cardShadow }};box-sizing:border-box;transition:transform .15s cubic-bezier(.32,.72,0,1),box-shadow .15s ease" style-hover="box-shadow:0 6px 16px rgba(0,0,0,0.12)" style-active="transform:scale(0.95)">
+            <span style="position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:{{ iconTint }};color:{{ accent }};display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg></span>
+            <div style="font-size:10.5px;color:{{ textMuted2 }};margin-bottom:6px;white-space:nowrap;padding-right:26px;overflow:hidden;text-overflow:ellipsis">{{ k.label }}</div>
+            <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:24px;color:{{ text }}">{{ k.value }}%</div>
+            <div style="height:5px;border-radius:3px;background:{{ statTrack }};margin-top:10px;position:relative;overflow:hidden"><div style="position:absolute;left:0;top:0;height:100%;width:{{ k.value }}%;background:{{ accent }}"></div></div>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    <button type="button" onClick="{{ openHierarchy }}" style="margin-top:10px;width:100%;display:flex;align-items:center;gap:10px;background:{{ cardBg }};padding:{{ perfPad }};border-radius:{{ radiusSm }};border:{{ cardBorder }};box-shadow:{{ cardShadow }};color:{{ text }};box-sizing:border-box;cursor:pointer;text-align:left;transition:transform .12s ease,box-shadow .15s ease" style-hover="box-shadow:0 4px 10px rgba(0,0,0,0.12)" style-active="transform:scale(0.97)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ accent }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+      <span style="flex:1;font-size:14px;font-weight:600">Hierarchy Performance</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+
+  <!-- quick actions -->
+  <div style="padding:{{ sectionPad }};position:relative">
+    <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:15px;letter-spacing:.02em;text-transform:uppercase;margin-bottom:12px">Quick Actions</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:{{ gridGap }}">
+      <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="7">
+        <button type="button" onClick="{{ selectTile }}" data-tile="{{ t.id }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;background:{{ cardBg }};border:1px solid {{ t.border }};border-radius:{{ radiusTile }};padding:{{ tilePad }};cursor:pointer;text-align:left;box-shadow:{{ cardShadowXs }};transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;color:{{ text }}" style-hover="border-color:{{ accent }};box-shadow:0 4px 10px rgba(0,0,0,0.1)" style-active="transform:scale(0.94);box-shadow:{{ cardShadowXs }}">
+          <div style="width:{{ tileIconSize }};height:{{ tileIconSize }};border-radius:{{ radiusIcon }};background:{{ t.iconBg }};display:flex;align-items:center;justify-content:center;color:{{ t.iconColor }};overflow:visible">{{ t.iconEl }}</div>
+          <span style="font-size:{{ tileFont }};font-weight:600;line-height:1.25">{{ t.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- promo banner -->
+  <div style="padding:18px 18px 24px">
+    <div style="position:relative;background:#151312;overflow:hidden;border-radius:{{ radiusLg }}">
+      <div style="filter:grayscale(1) contrast(1.1);opacity:.92">
+        <image-slot id="jp-banner" shape="rect" placeholder="Promo photo" style="width:100%;height:150px"></image-slot>
+      </div>
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,0) 55%)"></div>
+      <div style="position:absolute;left:16px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:2px;max-width:62%">
+        <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:15px;color:{{ accent500 }};line-height:1.35;direction:rtl;text-align:right">*964# سے بنڈل لگاؤ</div>
+        <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:15px;color:{{ accent500 }};line-height:1.35;direction:rtl;text-align:right">فوری کمیشن پاؤ</div>
+      </div>
+      <div style="position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:5px">
+        <sc-for list="{{ dots }}" as="d" hint-placeholder-count="3">
+          <span style="width:{{ d.w }};height:4px;background:{{ d.color }}"></span>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:96px"></div>
+  </div>
+</div>
+
+  <!-- sticky bottom nav: floating glass pill; the tinted indicator glides to the tapped tab before navigating -->
+  <nav data-jp-nav="1" style="position:absolute;left:14px;right:14px;bottom:14px;height:62px;display:flex;align-items:stretch;padding:6px;box-sizing:border-box;background:{{ navGlass }};backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid {{ navBorder }};border-radius:31px;box-shadow:0 12px 32px rgba(0,0,0,0.18),0 2px 6px rgba(0,0,0,0.06);z-index:45">
+    <span data-jp-ind="1" style="position:absolute;top:6px;bottom:6px;left:calc(6px + 0 * (100% - 12px) / 5);width:calc((100% - 12px) / 5);border-radius:25px;background:{{ iconTint }};transition:left .45s cubic-bezier(.32,.72,0,1),transform .45s cubic-bezier(.32,.72,0,1);pointer-events:none"></span>
+    <a href="Area Manager - Main.dc.html" aria-label="Home" data-idx="0" data-on="{{ accent }}" data-off="{{ textMuted }}" style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:{{ accent }};transition:color .3s ease,transform .25s cubic-bezier(.32,.72,0,1)" style-active="transform:scale(0.88)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"></path><path d="M5 9v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9"></path></svg>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.01em;white-space:nowrap">Home</span>
+    </a>
+    <a href="Area Manager - MYOP.dc.html" aria-label="MYOP" data-idx="1" data-on="{{ accent }}" data-off="{{ textMuted }}" style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:{{ textMuted }};transition:color .3s ease,transform .25s cubic-bezier(.32,.72,0,1)" style-active="transform:scale(0.88)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"></path><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"></path></svg>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.01em;white-space:nowrap">MYOP</span>
+    </a>
+    <a href="Area Manager - Commission.dc.html" aria-label="Commission" data-idx="2" data-on="{{ accent }}" data-off="{{ textMuted }}" style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:{{ textMuted }};transition:color .3s ease,transform .25s cubic-bezier(.32,.72,0,1)" style-active="transform:scale(0.88)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.01em;white-space:nowrap">Commission</span>
+    </a>
+    <a href="Area Manager - Float.dc.html" aria-label="Float" data-idx="3" data-on="{{ accent }}" data-off="{{ textMuted }}" style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:{{ textMuted }};transition:color .3s ease,transform .25s cubic-bezier(.32,.72,0,1)" style-active="transform:scale(0.88)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.01em;white-space:nowrap">Float</span>
+    </a>
+    <a href="Area Manager - Hierarchy Performance.dc.html" aria-label="Performance" data-idx="4" data-on="{{ accent }}" data-off="{{ textMuted }}" style="flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:{{ textMuted }};transition:color .3s ease,transform .25s cubic-bezier(.32,.72,0,1)" style-active="transform:scale(0.88)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.01em;white-space:nowrap">Performance</span>
+    </a>
+  </nav>
+
+  <button type="button" aria-label="Back to top" onClick="{{ backToTop }}" style="position:absolute;right:20px;bottom:90px;width:44px;height:44px;border-radius:50%;border:0;padding:3px;cursor:pointer;z-index:40;background:conic-gradient({{ accent }} {{ scrollPct }}%, {{ divider }} {{ scrollPct }}% 100%);opacity:{{ scrolledOpacity }};transform:{{ scrolledTransform }};pointer-events:{{ scrolledPointer }};transition:opacity .2s ease,transform .2s ease">
+    <span style="width:100%;height:100%;border-radius:50%;background:{{ cardBg }};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.2)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ accent }}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+    </span>
+  </button>
+
+  <!-- notifications panel -->
+  <sc-if value="{{ notifOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ toggleNotifications }}" style="position:absolute;inset:0;background:rgba(0,0,0,0.35);z-index:50;animation:jp-fade .12s ease"></div>
+    <div style="position:absolute;top:44px;right:14px;left:14px;max-height:70%;background:{{ cardBg }};border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,0.3);z-index:51;overflow:hidden;display:flex;flex-direction:column;transform-origin:top right;animation:jp-panel-in .16s cubic-bezier(.2,.8,.3,1)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid {{ divider }};flex:none">
+        <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:15px;color:{{ text }}">Notifications</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button type="button" onClick="{{ markAllRead }}" style="border:0;background:transparent;color:{{ accent }};font-size:12px;font-weight:700;cursor:pointer;padding:4px 2px">Mark all read</button>
+          <button type="button" aria-label="Close" onClick="{{ toggleNotifications }}" style="width:28px;height:28px;border:0;background:transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:{{ textMuted }}" style-hover="background:{{ divider }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="jp-scroll" style="overflow-y:auto;flex:1;min-height:0">
+        <sc-if value="{{ hasNotifications }}" hint-placeholder-val="{{ true }}">
+        <sc-for list="{{ notifications }}" as="n" hint-placeholder-count="4">
+          <div style="display:flex;gap:12px;padding:13px 16px;border-bottom:1px solid {{ divider }}">
+            <div style="width:36px;height:36px;flex:none;border-radius:11px;background:{{ n.iconBg }};color:{{ n.iconColor }};display:flex;align-items:center;justify-content:center">{{ n.iconEl }}</div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+                <div style="font-size:13.5px;font-weight:700;color:{{ text }}">{{ n.title }}</div>
+                <div style="font-size:10.5px;color:{{ textMuted }};flex:none">{{ n.time }}</div>
+              </div>
+              <div style="font-size:12.5px;color:{{ textMuted }};margin-top:2px;line-height:1.4">{{ n.body }}</div>
+            </div>
+            <sc-if value="{{ n.unread }}" hint-placeholder-val="{{ false }}">
+              <span style="width:8px;height:8px;border-radius:50%;background:{{ accent }};flex:none;margin-top:4px"></span>
+            </sc-if>
+          </div>
+        </sc-for>
+        </sc-if>
+        <sc-if value="{{ noNotifications }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:32px 16px;text-align:center;color:{{ textMuted }};font-size:13px">No notifications</div>
+        </sc-if>
+      </div>
+      <sc-if value="{{ hasNotifications }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:10px 16px;border-top:1px solid {{ divider }};flex:none">
+          <button type="button" onClick="{{ clearAllNotifications }}" style="width:100%;border:0;background:transparent;color:{{ textMuted }};font-size:12.5px;font-weight:600;cursor:pointer;padding:6px 0">Clear all</button>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <div style="height:20px;flex:none;display:flex;align-items:center;justify-content:center;background:{{ screenBg }};transition:background .25s ease">
+    <div style="width:108px;height:4px;border-radius:2px;background:{{ statusBarColor }};opacity:.4"></div>
+  </div>
+
+  <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeMenu }}" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);z-index:60;animation:jp-fade .12s ease"></div>
+    <div style="position:absolute;top:0;right:0;bottom:0;width:78%;max-width:290px;background:{{ cardBg }};z-index:61;box-shadow:-10px 0 30px rgba(0,0,0,0.3);display:flex;flex-direction:column;animation:jp-panel-in .18s cubic-bezier(.2,.8,.3,1)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 16px;border-bottom:1px solid {{ divider }};flex:none">
+        <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:16px;color:{{ text }}">Menu</div>
+        <button type="button" aria-label="Close menu" onClick="{{ closeMenu }}" style="width:28px;height:28px;border:0;background:transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:{{ textMuted }}" style-hover="background:{{ divider }}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="jp-scroll" style="flex:1;overflow-y:auto;padding:8px 0">
+        <sc-for list="{{ menuItems }}" as="mi" hint-placeholder-count="6">
+          <button type="button" onClick="{{ mi.onClick }}" style="display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;padding:12px 16px;cursor:pointer;text-align:left;color:{{ mi.color }};font-family:inherit" style-hover="background:{{ statTrack }}">
+            <div style="display:flex">{{ mi.iconEl }}</div>
+            <span style="font-size:14px;font-weight:600">{{ mi.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;sellingToday&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 128, &quot;min&quot;: 0, &quot;max&quot;: 1000, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Dashboard data&quot;},
+  &quot;sellingYesterday&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 120, &quot;min&quot;: 0, &quot;max&quot;: 1000, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Dashboard data&quot;},
+  &quot;agentCount&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 42, &quot;min&quot;: 1, &quot;max&quot;: 500, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Dashboard data&quot;},
+  &quot;lowBalanceCount&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 6, &quot;min&quot;: 0, &quot;max&quot;: 500, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Dashboard data&quot;},
+  &quot;density&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;comfortable&quot;, &quot;compact&quot;], &quot;default&quot;: &quot;comfortable&quot;, &quot;tsType&quot;: &quot;'comfortable' | 'compact'&quot;, &quot;section&quot;: &quot;Feel&quot;},
+  &quot;tone&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;bold&quot;, &quot;minimal&quot;], &quot;default&quot;: &quot;bold&quot;, &quot;tsType&quot;: &quot;'bold' | 'minimal'&quot;, &quot;section&quot;: &quot;Feel&quot;},
+  &quot;cardStyle&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;soft&quot;, &quot;sharp&quot;], &quot;default&quot;: &quot;soft&quot;, &quot;tsType&quot;: &quot;'soft' | 'sharp'&quot;, &quot;section&quot;: &quot;Feel&quot;}
+}">
+function makeIcon(name, accentColor) {
+  const seal = (cx, cy) => React.createElement('g', { key: 'seal' }, [
+    React.createElement('circle', { key: 1, cx, cy, r: 5.4, fill: accentColor || '#ec3013', stroke: 'currentColor', strokeWidth: 1.1 }),
+    React.createElement('text', { key: 2, x: cx, y: cy + 2.6, fontSize: 6, fontWeight: 800, fill: '#fff', textAnchor: 'middle', fontFamily: 'Archivo,sans-serif' }, 'Rs'),
+  ]);
+  const byName = {
+    // MYOP — price tag, bold rounded JazzCash-style stroke
+    tag: [
+      React.createElement('path', { key: 1, d: 'M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z' }),
+      React.createElement('circle', { key: 2, cx: 7.5, cy: 7.5, r: 1.4 }),
+    ],
+    // Commission — simple wallet
+    wallet: [
+      React.createElement('rect', { key: 1, x: 3, y: 6, width: 18, height: 13, rx: 2.2 }),
+      React.createElement('path', { key: 2, d: 'M3 10h18' }),
+      React.createElement('circle', { key: 3, cx: 16.5, cy: 14, r: 1.6 }),
+    ],
+    // Float — simple gauge/speedometer
+    percent: [
+      React.createElement('path', { key: 1, d: 'M4 15a8 8 0 1 1 16 0' }),
+      React.createElement('path', { key: 2, d: 'M12 15 16 10' }),
+      React.createElement('path', { key: 3, d: 'M4 15h16' }),
+    ],
+    // Franchise Survey — clipboard/receipt, like "Bill Payment"
+    bar: [
+      React.createElement('path', { key: 1, d: 'M6 2.5h12v19l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4z' }),
+      React.createElement('path', { key: 2, d: 'M8.5 8h7M8.5 11.5h7M8.5 15h4.5' }),
+    ],
+    // Campaign — megaphone, bolder rounded
+    megaphone: [
+      React.createElement('path', { key: 1, d: 'M3 10v4a1 1 0 0 0 1 1h2l3.5 4V5L6 9H4a1 1 0 0 0-1 1Z' }),
+      React.createElement('path', { key: 2, d: 'M14 8a4 4 0 0 1 0 8' }),
+      React.createElement('path', { key: 3, d: 'M17.5 5.5a8 8 0 0 1 0 13' }),
+    ],
+    // Retailer Performance — growth chart, bold rounded
+    trending: [
+      React.createElement('polyline', { key: 1, points: '3 17 9 11 13 15 21 6' }),
+      React.createElement('polyline', { key: 2, points: '15 6 21 6 21 12' }),
+    ],
+    // Bash Performance — people, bold rounded
+    users: [
+      React.createElement('path', { key: 1, d: 'M16.5 20.5v-1.7a3.6 3.6 0 0 0-3.6-3.6h-4.8a3.6 3.6 0 0 0-3.6 3.6v1.7' }),
+      React.createElement('circle', { key: 2, cx: 10.5, cy: 7.5, r: 3.6 }),
+      React.createElement('path', { key: 3, d: 'M20 20.5v-1.7a3.6 3.6 0 0 0-2.6-3.46' }),
+      React.createElement('path', { key: 4, d: 'M14.7 4.1a3.6 3.6 0 0 1 0 6.9' }),
+    ],
+  };
+  return React.createElement('svg', { width: 26, height: 26, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', style: { shapeRendering: 'geometricPrecision' } }, byName[name]);
+}
+function sunIcon() {
+  return React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, [
+    React.createElement('circle', { key: 1, cx: 12, cy: 12, r: 4 }),
+    React.createElement('path', { key: 2, d: 'M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66 4.93 19.07M19.07 4.93 17.66 6.34' }),
+  ]);
+}
+function moonIcon() {
+  return React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' },
+    React.createElement('path', { d: 'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z' }));
+}
+
+class Component extends DCLogic {
+  state = { activeTile: 'float', menuOpen: false, notifOpen: false, loyaltyOpen: false, darkMode: true, scrolled: false, scrollPct: 0, perfIndex: 0, pullDistance: 0, refreshing: false, pullDone: false, showOnboarding: true, refreshingBalance: false, notifReadIds: [], notifCleared: false,
+    // PROTOTYPE: real build should source this from backend view/tap analytics per manager,
+    // not client-side taps. Keyed by KPI label -> tap count this session.
+    kpiViewCounts: {}, refreshDone: false };
+
+  // Tapping a KPI card in the "My Performance" carousel counts as a "view" of that metric.
+  // In production this write would go to analytics (e.g. an event per KPI impression/tap),
+  // and mostViewedKpi below would instead read a manager's rolling most-viewed metric from
+  // the backend. Here we just count clicks client-side to demo the swap.
+  trackKpiView = (e) => {
+    const label = e.currentTarget.dataset.kpi;
+    this.setState((s) => ({ kpiViewCounts: { ...s.kpiViewCounts, [label]: (s.kpiViewCounts[label] || 0) + 1 } }));
+  };
+  _perfPaused = false;
+
+  componentDidMount() {
+    const step = (t) => {
+      if (this._lastT != null) {
+        const el = this._perfEl;
+        if (el && !this._perfPaused) {
+          el.scrollLeft += (t - this._lastT) * 0.038;
+          const half = el.scrollWidth / 2;
+          if (half > 0 && el.scrollLeft >= half) el.scrollLeft -= half;
+        }
+      }
+      this._lastT = t;
+      this._raf = requestAnimationFrame(step);
+    };
+    this._raf = requestAnimationFrame(step);
+  }
+
+  componentWillUnmount() {
+    cancelAnimationFrame(this._raf);
+    clearTimeout(this._resumeTimer);
+  }
+
+  perfRef = (el) => { this._perfEl = el; };
+  pausePerf = () => { this._perfPaused = true; };
+  resumePerf = () => { this._perfPaused = false; };
+  // Uses Pointer Events + setPointerCapture: once captured, move/up events keep firing on
+  // THIS element even if the pointer leaves it or is released elsewhere — the standard,
+  // reliable fix for "drag pauses the marquee forever if released outside the strip".
+  dragStart = (e) => {
+    this._perfPaused = true;
+    this._dragging = true;
+    this._dragCaptured = false;
+    this._dragPointerId = e.pointerId;
+    this._dragStartX = e.clientX;
+    this._dragStartScroll = this._perfEl ? this._perfEl.scrollLeft : 0;
+  };
+  dragMove = (e) => {
+    if (!this._dragging || !this._perfEl) return;
+    const dx = e.clientX - this._dragStartX;
+    // Only start scrolling (and only capture the pointer) once the finger/mouse has actually
+    // moved past a small threshold — capturing on every pointerdown swallowed the click event
+    // on KPI buttons tapped inside the strip, since the browser routes it to the captured
+    // element instead of the button underneath.
+    if (!this._dragCaptured) {
+      if (Math.abs(dx) < 6) return;
+      this._dragCaptured = true;
+      if (this._perfEl.setPointerCapture) {
+        try { this._perfEl.setPointerCapture(this._dragPointerId); } catch (err) {}
+      }
+    }
+    this._perfEl.scrollLeft = this._dragStartScroll - dx;
+  };
+  dragEnd = (e) => {
+    this._dragging = false;
+    this._perfPaused = false;
+    if (this._perfEl && this._perfEl.releasePointerCapture && e && e.pointerId != null) {
+      try { this._perfEl.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+  };
+  openLoyalty = () => this.setState(s => ({ loyaltyOpen: !s.loyaltyOpen, loyaltyExpanded: false }));
+  closeLoyalty = () => this.setState({ loyaltyOpen: false, loyaltyExpanded: false });
+  handleLoyaltyScroll = (e) => { if (!this.state.loyaltyExpanded && e.currentTarget.scrollTop > 2) this.setState({ loyaltyExpanded: true }); };
+  expandLoyalty = () => this.setState({ loyaltyExpanded: true });
+  closeMenu = () => this.setState({ menuOpen: false });
+  menuGoHome = () => { this.backToTop(); this.closeMenu(); };
+  menuGoPerf = () => { this.setState({ menuOpen: false }); this.openHierarchy(); };
+  menuGoNotifications = () => this.setState({ menuOpen: false, notifOpen: true });
+  menuGoLoyalty = () => this.setState({ menuOpen: false, loyaltyOpen: true });
+  _touchStartY = null;
+
+  handleScroll = (e) => {
+    const el = e.currentTarget;
+    this._scrollEl = el;
+    const past = el.scrollTop > 170;
+    const max = el.scrollHeight - el.clientHeight;
+    const pct = max > 0 ? Math.min(100, Math.max(0, (el.scrollTop / max) * 100)) : 0;
+    if (past !== this.state.scrolled || Math.abs(pct - this.state.scrollPct) > 0.5) {
+      this.setState({ scrolled: past, scrollPct: pct });
+    }
+  };
+
+  backToTop = () => {
+    if (this._scrollEl) this._scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  toggleNotifications = () => this.setState(s => ({ notifOpen: !s.notifOpen }));
+  openHierarchy = () => this.setState({ activeTile: 'bash' });
+  markAllRead = () => this.setState(s => ({ notifReadIds: s.notifReadIds.concat(['float', 'commission', 'campaign', 'survey']) }));
+  clearAllNotifications = () => this.setState({ notifCleared: true });
+
+  handleTouchStart = (e) => {
+    this._touchStartY = e.currentTarget.scrollTop <= 0 ? e.touches[0].clientY : null;
+  };
+
+  handleTouchMove = (e) => {
+    if (this._touchStartY == null || this.state.refreshing) return;
+    const delta = e.touches[0].clientY - this._touchStartY;
+    if (delta > 0) this.setState({ pullDistance: Math.min(delta * 0.4, 68) });
+  };
+
+  handleTouchEnd = () => {
+    if (this._touchStartY == null || this.state.refreshing) { this._touchStartY = null; return; }
+    this._finishPull();
+    this._touchStartY = null;
+  };
+
+  // Mouse fallback so the pull-to-refresh gesture also works with a mouse drag (desktop
+  // preview / trackpad), not just real touch. Uses window listeners so releasing outside
+  // the scroll area still ends the gesture correctly.
+  handlePullMouseDown = (e) => {
+    if (e.currentTarget.scrollTop > 0 || this.state.refreshing) return;
+    this._pullStartY = e.clientY;
+    window.addEventListener('mousemove', this._pullMouseMove);
+    window.addEventListener('mouseup', this._pullMouseUp);
+  };
+  _pullMouseMove = (e) => {
+    if (this._pullStartY == null) return;
+    const delta = e.clientY - this._pullStartY;
+    if (delta > 0) this.setState({ pullDistance: Math.min(delta * 0.4, 68) });
+  };
+  _pullMouseUp = () => {
+    window.removeEventListener('mousemove', this._pullMouseMove);
+    window.removeEventListener('mouseup', this._pullMouseUp);
+    if (this._pullStartY == null) return;
+    this._finishPull();
+    this._pullStartY = null;
+  };
+  _finishPull = () => {
+    if (this.state.pullDistance > 48) {
+      this.setState({ refreshing: true, pullDistance: 56 });
+      setTimeout(() => this.setState({ refreshing: false, pullDone: true }), 900);
+      setTimeout(() => this.setState({ pullDone: false, pullDistance: 0 }), 1350);
+    } else {
+      this.setState({ pullDistance: 0 });
+    }
+  };
+
+  dismissOnboarding = () => this.setState({ showOnboarding: false });
+
+  refreshBalance = () => {
+    if (this.state.refreshingBalance) return;
+    this.setState({ refreshingBalance: true, refreshDone: false });
+    setTimeout(() => this.setState({ refreshingBalance: false, refreshDone: true }), 800);
+    setTimeout(() => this.setState({ refreshDone: false }), 1300);
+  };
+
+
+
+  renderVals() {
+    const accent = '#ec3013';
+    const accent500 = '#ff563c';
+    const accent700 = this.state.darkMode ? '#ff9783' : '#ae1800';
+    const active = this.state.activeTile;
+    const dark = this.state.darkMode;
+
+    const theme = dark ? {
+      bg: '#17140f', cardBg: '#241f1d', text: '#f4f1ef',
+      textMuted: 'rgba(244,241,239,0.62)', textMuted2: 'rgba(244,241,239,0.55)',
+      divider: 'rgba(255,255,255,0.1)', statTrack: 'rgba(255,255,255,0.12)',
+      shadowSm: '0 1px 2px rgba(0,0,0,0.5)', shadowXs: '0 1px 2px rgba(0,0,0,0.45)',
+      iconBgDefault: '#332c2a', iconColorDefault: '#f4f1ef',
+      miniHeaderBg: 'rgba(23,20,15,0.94)', miniHeaderShadow: '0 2px 8px rgba(0,0,0,0.4)',
+      screenBg: '#17140f', statusBarColor: '#f4f1ef',
+    } : {
+      bg: '#f3f2f2', cardBg: '#ffffff', text: '#201e1d',
+      textMuted: 'rgba(32,30,29,0.6)', textMuted2: 'rgba(32,30,29,0.55)',
+      divider: 'rgba(32,30,29,0.12)', statTrack: 'rgba(32,30,29,0.12)',
+      shadowSm: '0 1px 2px rgba(32,30,29,0.08)', shadowXs: '0 1px 2px rgba(32,30,29,0.06)',
+      iconBgDefault: '#eae9e9', iconColorDefault: '#201e1d',
+      miniHeaderBg: 'rgba(255,255,255,0.94)', miniHeaderShadow: '0 2px 8px rgba(32,30,29,0.12)',
+      screenBg: '#f4fbf8', statusBarColor: '#201e1d',
+    };
+
+    const tile = (id, label, icon, priority) => {
+      const activeState = priority || id === active;
+      return {
+        id, label, iconEl: makeIcon(icon, accent),
+        border: id === active ? accent : theme.divider,
+        iconBg: 'transparent',
+        iconColor: activeState ? accent : '#7c1405',
+      };
+    };
+
+    const goodColor = dark ? '#7ddc9a' : '#1f9d55';
+    const alertBg = dark ? 'rgba(236,48,19,0.25)' : '#fff2ef';
+    const alertColor = accent700;
+    const goodBg = dark ? 'rgba(125,220,154,0.18)' : 'rgba(31,157,85,0.12)';
+
+    const scrolled = this.state.scrolled;
+    const pIdx = this.state.perfIndex;
+
+    const readIds = this.state.notifReadIds;
+    // Pick the manager's most-tapped KPI (if any) and use it to drive the Monthly Target card.
+    // Falls back to the default disbursement target when nothing has been tapped yet.
+    const kpiPool = {
+      '4G Gross Adds': { pct: 73, detail: '73 of 100 target adds this month' },
+      'B2C Real Postpaid': { pct: 51, detail: '51% of postpaid quota reached' },
+      'MFS M-Wallet': { pct: 72, detail: '72% of wallet signup target' },
+      'Multiplay': { pct: 52, detail: '52% of multiplay bundle target' },
+      'Recharge YTD': { pct: 100, detail: 'Recharge YTD target exceeded' },
+      'ROX': { pct: 88, detail: '88% of ROX quality score target' },
+    };
+    const counts = this.state.kpiViewCounts;
+    const mostViewedLabel = Object.keys(counts).length
+      ? Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0]
+      : null;
+    const mostViewed = mostViewedLabel && kpiPool[mostViewedLabel];
+    const targetLabel = mostViewed ? mostViewedLabel : 'Monthly Target';
+    const targetPct = mostViewed ? mostViewed.pct : 62;
+    const targetDetail = mostViewed ? mostViewed.detail : 'Rs 620k of 1M disbursed';
+
+    const notifList = this.state.notifCleared ? [] : [
+      { id: 'float', title: 'Float low', body: 'Your float balance is below the recommended threshold.', time: '10m', unread: !readIds.includes('float'), iconEl: makeIcon('percent'), iconBg: dark ? 'rgba(236,48,19,0.22)' : '#fff2ef', iconColor: accent700 },
+      { id: 'commission', title: 'Commission credited', body: 'Rs. 4,200 commission credited for last week.', time: '2h', unread: !readIds.includes('commission'), iconEl: makeIcon('wallet'), iconBg: dark ? 'rgba(16,185,129,0.18)' : '#e3f6ed', iconColor: '#0f7a56' },
+      { id: 'campaign', title: 'New campaign', body: '4G bundle campaign is live in your region.', time: '1d', unread: !readIds.includes('campaign') && false, iconEl: makeIcon('megaphone'), iconBg: dark ? 'rgba(139,92,246,0.2)' : '#f1ebfc', iconColor: '#6d3fd1' },
+      { id: 'survey', title: 'Franchise survey due', body: 'Complete this month\u2019s franchise survey by Friday.', time: '2d', unread: !readIds.includes('survey') && false, iconEl: makeIcon('bar'), iconBg: dark ? 'rgba(59,130,246,0.18)' : '#e6f0fe', iconColor: '#2159c9' },
+    ];
+
+    const density = this.props.density ?? 'comfortable';
+    const tone = this.props.tone ?? 'bold';
+    const cardStyle = this.props.cardStyle ?? 'soft';
+    const compact = density === 'compact';
+    const sharp = cardStyle === 'sharp';
+    const minimal = tone === 'minimal';
+
+    const spacing = {
+      headerPad: compact ? '16px 18px 20px' : '22px 20px 28px',
+      cardPad: compact ? '12px 14px' : '16px 18px',
+      cardMarginTop: compact ? '10px' : '16px',
+      targetPad: compact ? '10px 14px' : '14px 18px',
+      statsMargin: compact ? '10px 14px' : '14px 18px',
+      statPad: compact ? '11px 8px' : '16px 10px',
+      sectionPad: compact ? '14px 18px 2px' : '18px 18px 4px',
+      perfPad: compact ? '12px' : '16px',
+      gridGap: compact ? '7px' : '10px',
+      tilePad: compact ? '9px 8px' : '12px 10px',
+      tileIconSize: compact ? '28px' : '34px',
+      tileFont: compact ? '11.5px' : '12.5px',
+    };
+
+    const radiusLg = sharp ? '0px' : '18px';
+    const radiusMd = sharp ? '0px' : '16px';
+    const radiusSm = sharp ? '0px' : '14px';
+    const radiusTile = sharp ? '0px' : '16px';
+    const radiusIcon = sharp ? '0px' : '11px';
+    const cardShadow = sharp ? 'none' : theme.shadowSm;
+    const cardShadowXs = sharp ? 'none' : theme.shadowXs;
+    const cardBorder = sharp ? `1px solid ${theme.divider}` : 'none';
+    const dividerWeight = sharp ? '2px' : '1px';
+
+    const headerBg = minimal
+      ? (dark ? '#1c1512' : '#211712')
+      : 'linear-gradient(160deg, #17130f 0%, #4d170e 55%, #7c1405 100%)';
+
+    return {
+      deviceWidth: 412, deviceHeight: 892,
+      ...theme,
+      accent, accent500, accent700,
+      headerBg, headerText: '#ffffff', headerSubtext: 'rgba(255,255,255,0.78)',
+      radiusLg, radiusMd, radiusSm, radiusTile, radiusIcon,
+      cardShadow, cardShadowXs, cardBorder, dividerWeight,
+      ...spacing,
+      modeIcon: dark ? sunIcon() : moonIcon(),
+      toggleDark: () => this.setState(s => ({ darkMode: !s.darkMode })),
+      toggleMenu: () => this.setState(s => ({ menuOpen: !s.menuOpen })),
+      selectTile: (e) => this.setState({ activeTile: e.currentTarget.dataset.tile }),
+      handleScroll: this.handleScroll,
+      backToTop: this.backToTop,
+      scrollPct: this.state.scrollPct,
+      openHierarchy: this.openHierarchy,
+      trackKpiView: this.trackKpiView,
+      targetLabel, targetPct, targetDetail,
+      perfRef: this.perfRef,
+      pausePerf: this.pausePerf,
+      resumePerf: this.resumePerf,
+      dragStart: this.dragStart,
+      dragMove: this.dragMove,
+      dragEnd: this.dragEnd,
+      openLoyalty: this.openLoyalty,
+      iconTint: this.state.darkMode ? 'rgba(236,48,19,0.22)' : '#fff0ec',
+      navGlass: this.state.darkMode ? 'rgba(36,31,29,0.84)' : 'rgba(255,255,255,0.86)',
+      navBorder: this.state.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(32,30,29,0.08)',
+      closeLoyalty: this.closeLoyalty,
+      loyaltyOpen: this.state.loyaltyOpen,
+      handleLoyaltyScroll: this.handleLoyaltyScroll,
+      expandLoyalty: this.expandLoyalty,
+      loyaltyPanelHeight: this.state.loyaltyExpanded ? 780 : 330,
+      loyaltyHintOpacity: this.state.loyaltyExpanded ? 0 : 1,
+      loyaltyHintPointer: this.state.loyaltyExpanded ? 'none' : 'auto',
+      loyaltyRevealStyle: this.state.loyaltyExpanded
+        ? 'opacity:1;transform:translateY(0);transition:opacity .45s cubic-bezier(.22,.9,.24,1) .12s,transform .45s cubic-bezier(.22,.9,.24,1) .12s'
+        : 'opacity:0;transform:translateY(10px);transition:none',
+      loyaltyColor: '#e8b464',
+      loyaltyBg: 'rgba(232,180,100,0.18)',
+      closeMenu: this.closeMenu,
+      menuOpen: this.state.menuOpen,
+      menuItems: [
+        { label: 'Home', color: theme.text, onClick: this.menuGoHome, iconEl: React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }, [React.createElement('path', { key: 1, d: 'M3 9.5 12 3l9 6.5' }), React.createElement('path', { key: 2, d: 'M5 9v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9' })]) },
+        { label: 'My Performance', color: theme.text, onClick: this.menuGoPerf, iconEl: makeIcon('bar', accent) },
+        { label: 'Notifications', color: theme.text, onClick: this.menuGoNotifications, iconEl: React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }, [React.createElement('path', { key: 1, d: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9' }), React.createElement('path', { key: 2, d: 'M10.3 21a1.94 1.94 0 0 0 3.4 0' })]) },
+        { label: 'Support', color: theme.text, onClick: this.closeMenu, iconEl: React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }, [React.createElement('circle', { key: 1, cx: 12, cy: 12, r: 9 }), React.createElement('path', { key: 2, d: 'M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7v.3' }), React.createElement('path', { key: 3, d: 'M12 17h.01' })]) },
+        { label: 'FAQs', color: theme.text, onClick: this.closeMenu, iconEl: React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }, [React.createElement('circle', { key: 1, cx: 12, cy: 12, r: 9 }), React.createElement('path', { key: 2, d: 'M9.1 9a2.9 2.9 0 1 1 4.5 2.4c-.7.5-1.1 1.1-1.1 1.9v.2' }), React.createElement('circle', { key: 3, cx: 12, cy: 17, r: .1, fill: 'currentColor' })]) },
+        { label: 'Log Out', color: accent, onClick: this.closeMenu, iconEl: React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }, [React.createElement('path', { key: 1, d: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4' }), React.createElement('path', { key: 2, d: 'M16 17l5-5-5-5' }), React.createElement('path', { key: 3, d: 'M21 12H9' })]) },
+      ],
+      quickLinks: [
+        { label: 'Home', iconEl: React.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }, [React.createElement('path', { key: 1, d: 'M3 9.5 12 3l9 6.5' }), React.createElement('path', { key: 2, d: 'M5 9v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9' })]) },
+        { label: 'Support', iconEl: React.createElement('svg', { width: 17, height: 17, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }, [React.createElement('path', { key: 1, d: 'M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z' }), React.createElement('path', { key: 2, d: 'M12 9v4' }), React.createElement('path', { key: 3, d: 'M12 17h.01' })]) },
+        { label: 'FAQs', iconEl: React.createElement('svg', { width: 17, height: 17, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }, [React.createElement('circle', { key: 1, cx: 12, cy: 12, r: 9 }), React.createElement('path', { key: 2, d: 'M9.1 9a2.9 2.9 0 1 1 4.5 2.4c-.7.5-1.1 1.1-1.1 1.9v.2' }), React.createElement('circle', { key: 3, cx: 12, cy: 17, r: .1, fill: 'currentColor' })]) },
+      ],
+      toggleNotifications: this.toggleNotifications,
+      markAllRead: this.markAllRead,
+      clearAllNotifications: this.clearAllNotifications,
+      hasNotifications: notifList.length > 0,
+      noNotifications: notifList.length === 0,
+      notifOpen: this.state.notifOpen,
+      unreadCount: notifList.filter(n => n.unread).length,
+      notifications: notifList,
+      kpisDoubled: (() => {
+        const kpis = [
+          { label: '4G Gross Adds', value: 73 }, { label: 'B2C Real Postpaid', value: 51 },
+          { label: 'MFS M-Wallet', value: 72 }, { label: 'Multiplay', value: 52 },
+          { label: 'Recharge YTD', value: 104 }, { label: 'ROX', value: 88 },
+        ];
+        return [...kpis, ...kpis.map(k => ({ ...k, _dup: true }))];
+      })(),
+      handleTouchStart: this.handleTouchStart,
+      handleTouchMove: this.handleTouchMove,
+      handleTouchEnd: this.handleTouchEnd,
+      handlePullMouseDown: this.handlePullMouseDown,
+      dismissOnboarding: this.dismissOnboarding,
+      refreshBalance: this.refreshBalance,
+      refreshSpin: this.state.refreshingBalance ? 'jp-spin 0.6s linear infinite' : 'none',
+      refreshingBalance: this.state.refreshingBalance,
+      refreshDone: this.state.refreshDone,
+      refreshIdle: !this.state.refreshingBalance && !this.state.refreshDone,
+      // Keep the button's own static circular border only when idle — while the icon shows
+      // the spinning arc or checkmark, a second circle of nearly the same size right behind it
+      // reads as "the whole button rotating" instead of just a small spinning line.
+      refreshBtnBorder: (this.state.refreshingBalance || this.state.refreshDone) ? '1px solid transparent' : `1px solid ${theme.divider}`,
+      showOnboarding: this.state.showOnboarding,
+      tileGridMarginTop: this.state.showOnboarding ? '150px' : '0px',
+      pullHeight: (this.state.refreshing || this.state.pullDone ? 56 : this.state.pullDistance) + 'px',
+      pullOpacity: Math.min((this.state.refreshing || this.state.pullDone ? 56 : this.state.pullDistance) / 48, 1),
+      // Ring circumference is 2*PI*11 ≈ 69.1. Dash-offset counts down from that (empty) to 0
+      // (full circle) as the drag progresses toward the 48px release threshold, so the ring
+      // visually "fills in" in lockstep with the swipe — then spins during the refresh itself.
+      pullScale: this.state.pullDistance > 48 && !this.state.refreshing ? 1.15 : 1,
+      pullDashOffset: 56.5 - Math.min(this.state.pullDistance / 48, 1) * 56.5,
+      pullSpin: this.state.refreshing ? 'jp-spin 0.7s linear infinite' : 'none',
+      pullDone: this.state.pullDone,
+      pullRefreshing: this.state.refreshing,
+      pullIdle: !this.state.refreshing && !this.state.pullDone,
+      scrolledOpacity: scrolled ? 1 : 0,
+      scrolledTransform: scrolled ? 'translateY(0)' : 'translateY(-6px)',
+      scrolledPointer: scrolled ? 'auto' : 'none',
+      miniHeaderHeight: scrolled ? '48px' : '0px',
+      miniHeaderPadding: scrolled ? '10px 18px' : '0 18px',
+      // Selling: day-over-day change. Low balance: stock-out % = low / agents × 100,
+      // green ≤ 7%, amber > 7%, red > 10%.
+      stats: (() => {
+        const dk = this.state.darkMode;
+        const tone = {
+          good: { c: dk ? '#7ddc9a' : '#1a7f45', b: dk ? 'rgba(125,220,154,0.14)' : '#e3f5ea' },
+          warn: { c: dk ? '#f5c451' : '#9a6400', b: dk ? 'rgba(245,196,81,0.16)' : '#fdf1d4' },
+          bad:  { c: dk ? '#ff8f7a' : '#b3200a', b: dk ? 'rgba(236,48,19,0.2)' : '#fde6e1' },
+          mute: { c: dk ? 'rgba(244,241,239,0.6)' : 'rgba(32,30,29,0.6)', b: dk ? 'rgba(255,255,255,0.06)' : 'rgba(32,30,29,0.05)' },
+        };
+        const sellToday = this.props.sellingToday ?? 128, sellPrev = this.props.sellingYesterday ?? 120;
+        const agents = this.props.agentCount ?? 42, low = this.props.lowBalanceCount ?? 6;
+        const d = sellPrev ? ((sellToday - sellPrev) / sellPrev) * 100 : 0;
+        const dt = d >= 0 ? tone.good : tone.bad;
+        const so = agents ? (low / agents) * 100 : 0;
+        const st = so > 10 ? tone.bad : so > 7 ? tone.warn : tone.good;
+        return [
+          { label: 'Selling', value: String(sellToday), linkTile: 'retailer', sub: (d >= 0 ? '▲ ' : '▼ ') + Math.abs(d).toFixed(1) + '% vs yday', subColor: dt.c, subBg: dt.b, valueColor: dt.c },
+          { label: 'Agents', value: String(agents), linkTile: 'bash', sub: 'In your area', subColor: tone.mute.c, subBg: tone.mute.b, valueColor: dk ? '#f4f1ef' : '#201e1d' },
+          { label: 'Low Balance', value: String(low), linkTile: 'float', sub: so.toFixed(1) + '% stock-out', subColor: st.c, subBg: st.b, valueColor: st.c },
+        ];
+      })(),
+      statHover: this.state.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(32,30,29,0.045)',
+      tiles: [
+        tile('myop', 'MYOP', 'tag'),
+        tile('commission', 'Commission', 'wallet'),
+        tile('float', 'Float', 'percent', true),
+        tile('survey', 'Franchise Survey', 'bar'),
+        tile('campaign', 'Campaign', 'megaphone'),
+        tile('retailer', 'Retailer Performance', 'trending'),
+        tile('bash', 'Bash Performance', 'users'),
+      ],
+      dots: [
+        { w: '16px', color: accent },
+        { w: '6px', color: 'rgba(32,30,29,0.25)' },
+        { w: '6px', color: 'rgba(32,30,29,0.25)' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>
