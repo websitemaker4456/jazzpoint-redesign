@@ -10,6 +10,6 @@
   <g fill="none" stroke="#5a5551" stroke-width="2" stroke-dasharray="10 8">
     <rect x="16" y="16" width="792" height="268" rx="14"/>
   </g>
-  <text x="412" y="140" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-weight="800" font-size="26" fill="#8a8580">PROMO BANNER PLACEHOLDER</text>
-  <text x="412" y="172" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-weight="500" font-size="15" fill="#6e6a67">Replace with assets/promo-banner.jpg — 824&#215;300 (2&#215;), rendered grayscale</text>
+  <text x="808" y="270" text-anchor="end" font-family="Archivo, system-ui, sans-serif" font-weight="800" font-size="20" fill="#8a8580">PROMO BANNER PLACEHOLDER</text>
+  <text x="808" y="290" text-anchor="end" font-family="Archivo, system-ui, sans-serif" font-weight="500" font-size="12" fill="#6e6a67">Replace with assets/promo-banner.jpg — 824&#215;300 (2&#215;)</text>
 </svg>
