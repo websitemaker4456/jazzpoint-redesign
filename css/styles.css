@@ -105,6 +105,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .icon { width: 20px; height: 20px; stroke-width: 2.2; flex: none; }
 .icon--xs { width: 10px; height: 10px; }
+.icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
 
 .app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: calc(var(--nav-height) + 40px); position: relative; overflow-x: clip; }
 
@@ -379,6 +380,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .search-field .icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); pointer-events: none; }
 
 .section-chip { background: var(--color-track); padding: 10px 18px; font-weight: var(--fw-black); font-size: var(--fs-md); color: var(--color-accent); }
+
+/* A section title that isn't inside a padded .section (e.g. above a standalone list card) */
+.subsection-title { font-weight: var(--fw-black); font-size: var(--fs-base); letter-spacing: .02em; text-transform: uppercase; margin: var(--space-10) 0 var(--space-6); }
 
 .list-rows { display: flex; flex-direction: column; gap: var(--space-6); list-style: none; margin: 0; padding: var(--space-7) var(--space-8); }
 .list-row { display: flex; align-items: stretch; width: 100%; text-decoration: none; color: inherit; transition: transform 120ms ease; }

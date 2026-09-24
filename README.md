@@ -12,13 +12,21 @@ JazzPoint is a telecom retail/franchise management app. This build covers the **
 ## Page list
 | File | Purpose | Status |
 |---|---|---|
-| `index.html` | Area Manager home: balance, runway, stats, KPIs, quick actions | ✅ exported |
-| `myop.html` | MYOP campaign performance | build from `design/Area Manager - MYOP.dc.html` |
-| `commission.html` | Commission earned breakdown | build from `design/Area Manager - Commission.dc.html` |
-| `float.html` | Float history and runway detail | build from `design/Area Manager - Float.dc.html` |
-| `hierarchy-performance.html` | KPI performance by hierarchy | build from `design/Area Manager - Hierarchy Performance.dc.html` |
-| `tss-list.html` | TSS drill-down list | build from `design/…Hierarchy Performance - TSS List.dc.html` |
-| `franchise-list.html` | Franchise drill-down list | build from `design/…Hierarchy Performance - Franchise List.dc.html` |
+| `index.html` | Area Manager home: balance, runway, stats, KPIs, quick actions | ✅ built |
+| `myop.html` | MYOP hub (My Budget, Budget Re-Distribution, Assign KPI, Performance) | ✅ built from `design/Area Manager - MYOP.dc.html` |
+| `commission.html` | Commission earned breakdown | ✅ built — see note below, design reference didn't match |
+| `float.html` | Float history and runway detail | ✅ built — see note below, design reference didn't match |
+| `hierarchy-performance.html` | KPI performance by hierarchy (TSS / Franchise chooser) | ✅ built from `design/Area Manager - Hierarchy Performance.dc.html` |
+| `tss-list.html` | TSS drill-down list | ✅ built from `design/…Hierarchy Performance - TSS List.dc.html` |
+| `franchise-list.html` | Franchise drill-down list | ✅ built from `design/…Hierarchy Performance - Franchise List.dc.html` |
+
+> **Design reference mismatch.** `design/Area Manager - Commission.dc.html` and `design/Area
+> Manager - Float.dc.html` both turned out to be byte-for-byte duplicates of the Hierarchy
+> Performance TSS/Franchise chooser screen (same markup and copy, only the active nav tab
+> differs) rather than real mockups for Commission or Float. `commission.html` and `float.html`
+> were built from this README's functional spec instead, reusing the established card/history-row
+> components. Please supply real design references for these two screens when available — the
+> current per-KPI commission amounts and float history entries are plausible placeholder data.
 
 Menu, Notifications and Dark Mode are **states of `index.html`** (drawer, panel, `data-theme="dark"`), not separate pages. The `design/Area Manager - Menu / Notifications / Dark Mode.dc.html` files predate the latest Main polish, so treat `Area Manager - Main.dc.html` as the source of truth for shared parts.
 
@@ -66,8 +74,11 @@ Menu, Notifications and Dark Mode are **states of `index.html`** (drawer, panel,
 - `GET /notifications`, `POST /notifications/read-all`
 - Promo banner → CMS or static JSON (`image`, `copyUr`, `link`)
 - Analytics: `<!-- ANALYTICS / TAG MANAGER SNIPPET -->` in `<head>`. Track `kpi_view`, `quick_action_tap`, `balance_refresh`, `nav_tap`.
+- *(new, not yet confirmed with backend)* `GET /float/history` → `[{ id, type, label, meta, amount, direction }]` for `float.html`
+- *(new, not yet confirmed with backend)* `GET /commission/summary` → `{ earnedThisMonth, updatedAt }` and `GET /commission/breakdown` → `[{ id, label, meta, amount }]` for `commission.html`
+- *(new)* `GET /hierarchy/tss` and `GET /hierarchy/franchise` → `[{ id, name }]` for `tss-list.html` / `franchise-list.html`
 
-All placeholders use `data-bind="…"` attributes in `index.html`.
+All placeholders use `data-bind="…"` attributes.
 
 ---
 
@@ -83,20 +94,26 @@ All placeholders use `data-bind="…"` attributes in `index.html`.
 ---
 
 ## Acceptance checklist
-- [ ] Main screen matches `design/Area Manager - Main.dc.html` at 412px wide (light and dark)
-- [ ] Header and bottom nav are frosted glass with the same gradient, and content blurs behind the nav when scrolling
-- [ ] Runway number and segments change colour together at the thresholds
-- [ ] Sales chip is green ▲ / red ▼; Low Balance colours follow the thresholds
-- [ ] KPI bars cap at 100% width when the value is above 100%
-- [ ] All interactive elements have hover, press and focus-visible states
-- [ ] Nav indicator slides before navigating, and the active tab is correct on every page
-- [ ] Notifications and menu open and close (overlay, ✕, Esc); mark-all-read works
-- [ ] Dark mode persists across reloads
-- [ ] Back-to-top appears after 300px and the ring tracks scroll
-- [ ] No console errors; Lighthouse mobile performance ≥ 90 and accessibility ≥ 95
-- [ ] Layout holds at 360, 412, 480, 768 and 1024px
-- [ ] Promo placeholder is replaced with the real asset
-- [ ] All pages in the Page list exist and link correctly
+- [x] Main screen matches `design/Area Manager - Main.dc.html` at 412px wide (light and dark)
+- [x] Header and bottom nav are frosted glass with the same gradient (content scrolls *under* the fixed nav, so it's always blurring something behind it — see notes below on backdrop-filter fallback)
+- [x] Runway number and segments change colour together at the thresholds
+- [x] Sales chip is green ▲ / red ▼; Low Balance colours follow the thresholds
+- [x] KPI bars cap at 100% width when the value is above 100% (Recharge YTD = 104% renders a full-width bar)
+- [x] All interactive elements have hover, press and focus-visible states
+- [x] Nav indicator slides before navigating, and the active tab is correct on every page
+- [x] Notifications and menu open and close (overlay, ✕, Esc); mark-all-read works
+- [x] Dark mode persists across reloads (`localStorage['jp-theme']`)
+- [x] Back-to-top appears after 300px and the ring tracks scroll
+- [x] No console errors on any page (verified headlessly; the only network failure seen in this
+      sandbox is Google Fonts being blocked by the sandbox's own proxy, not a real issue)
+- [ ] Lighthouse mobile performance ≥ 90 and accessibility ≥ 95 — **not run**, Lighthouse/Chrome
+      DevTools' full audit isn't available in this sandbox (no network to install it). The two
+      oversized logo PNGs (~550–650KB, see Asset list) are the most likely performance ding —
+      recompress them before shipping.
+- [x] Layout holds at 360, 412, 480, 768 and 1024px (verified headlessly at each breakpoint, both
+      themes; fixed a real horizontal-overflow bug at 360px along the way — see commit history)
+- [ ] Promo placeholder is replaced with the real asset — still a placeholder (SVG), see Asset list
+- [x] All pages in the Page list exist and link correctly
 
 ---
 
@@ -127,13 +144,13 @@ Scale: 10 · 10.5 · 12 · 13 · 15 (body) · 19 · 20 · 24 · 28 · 30px. Titl
 ## Asset list
 | File | Size | Format | Used in | Status |
 |---|---|---|---|---|
-| `assets/promo-banner.jpg` | 824×300 (2×) | JPEG/WebP | Promo banner | ⚠️ **PLACEHOLDER — supply real photo** |
-| `assets/jazzpoint-logo-icon.png` | see file | PNG, transparent | App icon / splash | provided |
-| `assets/jazzpoint-logo-icon-3.png` | see file | PNG, transparent | Alt logo mark | provided |
-| `assets/icon-myop.png`, `icon-myop-plan.png`, `icon-kpi.png`, `icon-bash.png`, `icon-bundles.png`, `icon-prepaid.png`, `icon-postpaid.png` | see file | PNG, red line art | Legacy/Retailer icons (not used on AM Main) | provided |
-| UI icons | 11–22px | Lucide (SVG) | Every icon on Main | CDN → replace with local sprite |
+| `assets/promo-banner.jpg` | 824×300 (2×) | JPEG/WebP | Promo banner | ⚠️ **PLACEHOLDER — supply real photo.** `assets/promo-banner-placeholder.svg` stands in for it today so the layout renders; swap the `<img src>` in `index.html` back to `promo-banner.jpg` once it exists. WebP conversion couldn't be done in this sandbox (no image tooling or package-registry access) — recompress on your end (Squoosh/TinyPNG) as JPEG + WebP with a `<picture>` fallback. |
+| `assets/jazzpoint-logo-icon.png` | 584×580 | PNG, transparent | Favicon | provided, but **552KB is oversized for a favicon** — this sandbox had no image tooling to recompress it; downsize to ~32–180px PNG/ICO before shipping |
+| `assets/jazzpoint-logo-icon-3.png` | 590×590 | PNG, transparent | Alt logo mark (unused) | provided, same oversized-file caveat as above |
+| `assets/icon-myop.png`, `icon-myop-plan.png`, `icon-kpi.png`, `icon-bash.png`, `icon-bundles.png`, `icon-prepaid.png`, `icon-postpaid.png` | see file | PNG, red line art | Legacy/Retailer icons (not used on any built page) | provided, unused — safe to delete if confirmed dead |
+| UI icons | 20×20 (CSS) | Inline SVG sprite | Every icon on every page | ✅ done — `assets/icons.svg` is the reference copy; each page inlines the symbols it uses directly in `<body>` (no CDN, no runtime fetch) |
 | Wordmark | — | Live text (Archivo 800) | Header | no file needed |
-| Avatar | 44×44 | Lucide `user` | Header | ⚠️ swap for user photo if the API provides one |
+| Avatar | 44×44 | Inline SVG (`icon-user`) | Header | ⚠️ swap for a real `<img>` user photo if the API provides one |
 
 ---
 
